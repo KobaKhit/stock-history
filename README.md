@@ -1,0 +1,1 @@
+Look at any stock history using yahoo finance and streamlit.
