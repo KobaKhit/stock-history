@@ -233,6 +233,4 @@ view = (spy_line2 & (spy_corr | bar)) \
     .configure(background='rgb(14 17 23)') \
     .properties(center=True, autosize='fit')
 
-_,c,_ = st.columns([1,8,4])
-with c:
-    st.altair_chart(view)
+st.altair_chart(view)
