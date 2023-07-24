@@ -86,6 +86,8 @@ with c2:
         min_value = int(minYear),
         max_value = int(currentYear))
 
+if year_range[1] < currentYear: currentYear = year_range[1]
+
 df = df[df.year.astype(int).between(*year_range)]
 # calculate expanding pct change by year
 df['ytd_pct_chng'] = df.groupby('year')['Close'].apply(lambda x: x.div(x.iloc[0]).subtract(1)).values
