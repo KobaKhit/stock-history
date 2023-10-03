@@ -5,11 +5,19 @@ import altair as al
 import yfinance as yf
 from datetime import datetime
 
+from typing import Union
+
+
+# Configs
 currentYear = datetime.now().year
 
 st.set_page_config(layout="wide")
 
-def local_css(file_name):
+al.data_transformers.disable_max_rows() # remove 5k rows limit
+al.themes.enable('dark') # set dark theme
+
+# Helpers
+def local_css(file_name: str):
     '''
     Read in and apply user defined css.
 
@@ -26,10 +34,16 @@ def local_css(file_name):
 # local_css('dark.css')
 
 @st.cache_data
-def get_ticker_history(ticker, print_info = False):
+def get_ticker_history(ticker: Union[str, list], print_info: bool = False) -> pd.DataFrame:
     '''
     Retrieve Ticker history from yahoo finance.
     Argument ticker can be a list of tickers.
+
+    Args:
+        ticker (str or list of str): path to the css file.
+
+    Return:
+        Nothing
     '''
 
     if type(ticker)==list: # if list download data for every ticker.
@@ -51,15 +65,19 @@ def get_ticker_history(ticker, print_info = False):
 
     return hist
 
+#####
+# App
+#####
+
 st.title('🚀💸Stock History📉📈')
 
+# Input ticker
 c1,c2 = st.columns([3,9])
 with c1:
     ticker = st.text_input('Enter the Ticker', placeholder = 'SPY')
 if ticker == '': ticker = 'SPY'
 
-al.data_transformers.disable_max_rows() # remove 5k rows limit
-al.themes.enable('dark') # set dark theme
+
 
 
 df = get_ticker_history([ticker])
@@ -70,7 +88,7 @@ if df.empty:
 # df.to_csv('data.csv')
 # df.head(2)
 
-## Line Chart data
+# Line Chart data
 df['date'] = df.Date
 df['month_day'] = [d.month*100 + d.day for d in df.date]
 df['year'] = [str(d.year) for d in df.date]
@@ -79,6 +97,7 @@ df['year2'] = df.year
 minYear = min(df.year)
 minFilteredYear = max(int(minYear),int(currentYear)-25)
 
+# year slider
 with c2:
     year_range = st.slider(
         "",
@@ -101,13 +120,16 @@ corrMat = corrMat[~corrMat[['year','year2']].apply(frozenset, axis=1).duplicated
 
 correlated_years = corrMat[(corrMat.year2==str(currentYear)) & (corrMat.year!=str(currentYear))].sort_values(by='corr', key=abs, ascending = False)[['year','corr']].values[:2]
 
+# Expander
 with st.expander('About'):
     st.markdown(f'''
-    This dashboard shows percent change in \${ticker.upper()} price or any other Ticker available on `yfinance` which you can enter above.
+    This dashboard shows percent change in **\${ticker.upper()}** price by year or any other ticker available on `yfinance`.
 
     Using the correlation map below we can see that {currentYear} was most correlated to {correlated_years[0][0]} ({round(100*correlated_years[0][1])}%) and {correlated_years[1][0]} ({round(100*correlated_years[1][1])}%). If you hover over the correlation map, the corresponding year pairs will be highlighted in the line chart.
 
     I used yahoo finance to get the data and altair for plotting charts. Altair is a powerful declarative python plotting library based on vega. I like it for its crossfiltering feature where one can define interactions between charts. 
+
+    For crossfiltering to happen the altair charts must be a [compound object](https://altair-viz.github.io/user_guide/compound_charts.html). There are creative ways of overcoming this limitation like [streamlit-vega-lite](https://github.com/domoritz/streamlit-vega-lite) module. 
     
     ''')
 
@@ -145,7 +167,6 @@ points = base.mark_circle().encode(
 )
 
 spy_line = (points)
-# spy_line
 
 ## Correlation Map
 # define base chart
@@ -173,12 +194,11 @@ year_selector = al.selection_single(fields=['year','year2'],on = 'mouseover',nam
 spy_corr = corr
 
 if len(df.year.unique()) < 32:
-    spy_corr = (spy_corr + text)
+    corr = (corr + text)
 
-spy_corr = spy_corr.add_selection(
+corr = corr.add_selection(
     year_selector
 )
-# spy_corr
 
 ## Horizonthal Bar Chart
 
@@ -230,7 +250,7 @@ spy_line2 = (spy_line+base.mark_line().encode(
 ).add_selection(year_selector))
 
 
-view = (spy_line2 & (spy_corr | bar)) \
+view = (spy_line2 & (corr | bar)) \
     .configure_title(fontSize=18) \
     .configure(background='rgb(14 17 23)') \
     .properties(center=True, autosize='fit')
