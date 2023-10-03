@@ -255,4 +255,13 @@ view = (spy_line2 & (corr | bar)) \
     .configure(background='rgb(14 17 23)') \
     .properties(center=True, autosize='fit')
 
+# st.vega_lite_chart(view.to_dict(), use_container_width = True)
+
+# center chart
+st.markdown('<style>.element-container {text-align: center;}</style>', unsafe_allow_html = True)
 st.altair_chart(view)
+
+
+
+
+
