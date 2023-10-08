@@ -259,7 +259,11 @@ view = (spy_line2 & (corr | bar)) \
 
 # center chart
 st.markdown('<style>.element-container {text-align: center;}</style>', unsafe_allow_html = True)
-st.altair_chart(view)
+view
+
+
+
+
 
 
 
