@@ -145,7 +145,7 @@ annual = df.groupby('year')['Close'].apply(lambda x: pd.Series.pct_change(x).sum
 
 ## Line Chart
 # define base chart
-base = al.Chart(df,title=f"Every Year of {ticker}, {year_range[0]} - {year_range[1]}").mark_line(interpolate='basis').encode(
+base = al.Chart(df,title=al.Title(f"Every Year of {ticker}, {year_range[0]} - {year_range[1]}",color='white')).mark_line(interpolate='basis').encode(
     x=al.X('monthdate(date):O', title='',  axis=al.Axis(labelAngle=-45)),
     y=al.Y('ytd_pct_chng:Q', title='Percent Change YTD', axis=al.Axis(format='%')),
     detail='year',
@@ -156,8 +156,9 @@ base = al.Chart(df,title=f"Every Year of {ticker}, {year_range[0]} - {year_range
     height=350
 )
 
+
 # add highlight on hover selector
-highlight = al.selection(type='single', on='mouseover',
+highlight = al.selection_point( on='mouseover',
                           fields=['year'], nearest=True)
 
 points = base.mark_circle().encode(
@@ -170,7 +171,7 @@ spy_line = (points)
 
 ## Correlation Map
 # define base chart
-corr = al.Chart(corrMat, title='Correlation by year').mark_rect().encode(
+corr = al.Chart(corrMat, title=al.Title('Correlation by year', color='white')).mark_rect().encode(
     x=al.X('year', title=None, sort='ascending', axis=al.Axis(orient="top",labelAngle=-45)),
     y=al.Y('year2', title=None, sort='descending'),
     color=al.Color('corr', legend=None),
@@ -190,7 +191,7 @@ text = corr.mark_text(size=9).encode(
 )
 
 # define year selector and add to correlation chart
-year_selector = al.selection_single(fields=['year','year2'],on = 'mouseover',name='year_selector')
+year_selector = al.selection_point(fields=['year','year2'],on = 'mouseover',name='year_selector')
 spy_corr = corr
 
 if len(df.year.unique()) < 32:
@@ -203,7 +204,7 @@ corr = corr.add_selection(
 ## Horizonthal Bar Chart
 
 # define base
-bar = al.Chart(annual, title='Annual Percent Change').mark_bar().encode(
+bar = al.Chart(annual, title=al.Title('Annual Percent Change', color='white')).mark_bar().encode(
     x=al.X('Close:Q',title='', axis=al.Axis(format=".0%", orient="top")),
     y=al.Y("year:O",sort='descending'),
     tooltip=['year',al.Tooltip('Close', format=".0%")],
@@ -253,12 +254,13 @@ spy_line2 = (spy_line+base.mark_line().encode(
 view = (spy_line2 & (corr | bar)) \
     .configure_title(fontSize=18) \
     .configure(background='rgb(14 17 23)') \
+    .configure_axis(grid=False) \
     .properties(center=True, autosize='fit')
 
 # st.vega_lite_chart(view.to_dict(), use_container_width = True)
 
 # center chart
-st.markdown('<style>.element-container {text-align: center;}</style>', unsafe_allow_html = True)
+# st.markdown('<style>.element-container {text-align: center;}</style>', unsafe_allow_html = True)
 view
 
 
