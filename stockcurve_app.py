@@ -76,7 +76,7 @@ c1,c2 = st.columns([3,9])
 with c1:
     ticker = st.text_input('Enter the Ticker', placeholder = 'AAPL')
 if ticker == '': ticker = 'AAPL'
-
+st.write(ticker)
 
 
 
